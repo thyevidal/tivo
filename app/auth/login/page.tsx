@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${location.origin}/app/chat` }
+      options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
     })
     if (error) setError(error.message)
     else setSent(true)
@@ -28,7 +28,7 @@ export default function LoginPage() {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/app/chat` }
+      options: { redirectTo: `${location.origin}/api/auth/callback` }
     })
   }
 
