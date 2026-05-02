@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, Clock, CalendarDays, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
