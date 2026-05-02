@@ -48,13 +48,13 @@ export default function LoginPage() {
       <div style={{
         position: 'absolute', top: '20%', left: '20%',
         width: '400px', height: '400px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(74,222,128,0.05) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)',
         pointerEvents: 'none', filter: 'blur(60px)',
       }} />
       <div style={{
         position: 'absolute', bottom: '10%', right: '10%',
         width: '300px', height: '300px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(34,197,94,0.03) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)',
         pointerEvents: 'none', filter: 'blur(40px)',
       }} />
 
@@ -63,9 +63,9 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{
             width: 72, height: 72, borderRadius: 24, margin: '0 auto 20px',
-            background: 'linear-gradient(135deg, #166534, #22c55e)',
+            background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 40px rgba(34,197,94,0.3)',
+            boxShadow: '0 0 40px rgba(99,102,241,0.3)',
             border: '1px solid rgba(255,255,255,0.1)',
             position: 'relative'
           }}>
@@ -76,7 +76,7 @@ export default function LoginPage() {
           </div>
           <h1 style={{ 
             fontFamily: 'var(--font-display)', fontSize: 42, fontWeight: 700,
-            background: 'linear-gradient(to bottom, #fff, #94a3b8)',
+            background: 'linear-gradient(to bottom, #fff, #c7d2fe)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             marginBottom: 8, letterSpacing: '-1px'
           }}>
