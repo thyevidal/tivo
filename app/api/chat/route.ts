@@ -169,6 +169,14 @@ const tools = [
     },
   },
   {
+    name: 'limpar_dados',
+    description: 'APAGA PERMANENTEMENTE todas as contas, receitas e metas do usuário para recomeçar do zero.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
     name: 'atualizar_meta',
     description: 'Adiciona valor ou atualiza uma meta',
     parameters: {
@@ -316,6 +324,13 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         const { error } = await supabase.from('metas').update(upd).eq('id', id).eq('usuario_id', userId).is('excluido_em', null)
         if (error) throw error
         return { sucesso: true }
+      }
+      case 'limpar_dados': {
+        await supabase.from('contas').delete().eq('usuario_id', userId)
+        await supabase.from('receitas').delete().eq('usuario_id', userId)
+        await supabase.from('metas').delete().eq('usuario_id', userId)
+        await supabase.from('conversas').delete().eq('usuario_id', userId)
+        return { sucesso: true, mensagem: 'Todos os seus dados foram apagados permanentemente. O Tivo está zerado!' }
       }
       default: return { erro: 'Ferramenta não encontrada' }
     }

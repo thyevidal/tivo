@@ -34,7 +34,7 @@ export default function ContasPage() {
       .eq('usuario_id', session.user.id)
       .is('excluido_em', null) // Filtrar lixeira
       .order('vencimento', { ascending: true })
-    setContas(data || [])
+    setContas((data || []).filter((c: any) => !c.excluido_em))
     setLoading(false)
   }
 

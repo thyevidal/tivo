@@ -98,7 +98,14 @@ export default function PainelPage() {
       pendentesAgrupadas.push(...Array.from(gruposMap.values()))
       pendentesAgrupadas.sort((a, b) => a.vencimento.localeCompare(b.vencimento))
 
-      setResumo({ receitasMes, contasMes, saldoFinal, totalPago, totalVencido, proximosVencimentos: pendentesAgrupadas.slice(0, 10) })
+      setResumo({ 
+        receitasMes, 
+        contasMes, 
+        saldoFinal, 
+        totalPago, 
+        totalVencido, 
+        proximosVencimentos: pendentesAgrupadas.filter((c: any) => !c.excluido_em).slice(0, 10) 
+      })
       setLoading(false)
     }
     load()

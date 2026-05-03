@@ -34,7 +34,7 @@ export default function ReceitasPage() {
       .eq('usuario_id', session.user.id)
       .is('excluido_em', null) // Filtrar lixeira
       .order('data_recebimento', { ascending: true })
-    setReceitas(data || [])
+    setReceitas((data || []).filter((r: any) => !r.excluido_em))
     setLoading(false)
   }
 

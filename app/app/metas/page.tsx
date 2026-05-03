@@ -27,9 +27,10 @@ export default function MetasPage() {
       .from('metas')
       .select('*')
       .eq('usuario_id', session.user.id)
-      .is('excluido_em', null) // Filtrar lixeira
+      .is('excluido_em', null)
       .order('criado_em', { ascending: false })
-    setMetas(data || [])
+    // Filtro extra no JS para garantir
+    setMetas((data || []).filter((m: any) => !m.excluido_em))
   }
 
   useEffect(() => { load() }, [])
