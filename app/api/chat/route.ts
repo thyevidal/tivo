@@ -312,11 +312,11 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
 export async function POST(req: NextRequest) {
   try {
     const supabase = createServerSupabaseClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
     const { messages } = await req.json()
-    const userId = session.user.id
+    const userId = user.id
 
     // Verificar plano
     const { data: userDb } = await supabase.from('usuarios').select('planos(nome)').eq('id', userId).single()
@@ -378,7 +378,7 @@ Metas: ${JSON.stringify(m || [])}`
       if (currentMessages[0].role !== 'user') currentMessages.shift()
       
       while (true) {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

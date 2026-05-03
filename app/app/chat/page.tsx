@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 import { useState, useRef, useEffect } from 'react'
-import { Send, Sparkles } from 'lucide-react'
+import { Send, Sparkles, Bot, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 interface Message {
@@ -15,14 +15,14 @@ const getTime = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', 
 const suggestions = [
   'Quais contas vencem essa semana?',
   'Como está meu orçamento esse mês?',
-  'Me ajuda a criar uma meta de economia',
   'Analisa minha situação financeira',
+  'Me ajuda a criar uma meta',
 ]
 
 // Mensagem de boas-vindas exibida quando não há histórico recente
 const WELCOME_MSG: Message = {
   role: 'assistant',
-  content: 'Olá! Sou o Tivo, seu assistente financeiro. 👋\n\nPosso te ajudar a organizar contas, acompanhar gastos e planejar suas metas. O que você precisa hoje?',
+  content: 'Olá! Sou o Tivo, seu assistente financeiro inteligente. 🤖\n\nPosso te ajudar a organizar suas contas, receitas e planejar suas metas. O que vamos analisar hoje?',
   time: '',
 }
 
@@ -38,8 +38,8 @@ export default function ChatPage() {
   // Carrega histórico das últimas 24h ao iniciar
   useEffect(() => {
     async function loadHistory() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { setLoadingHistory(false); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoadingHistory(false); return }
 
       // Janela de 24h para a UI
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -47,7 +47,7 @@ export default function ChatPage() {
       const { data: historico } = await supabase
         .from('conversas')
         .select('role, conteudo, criado_em')
-        .eq('usuario_id', session.user.id)
+        .eq('usuario_id', user.id)
         .gte('criado_em', since24h)
         .order('criado_em', { ascending: true })
 
@@ -130,13 +130,15 @@ export default function ChatPage() {
       }}>
         <div style={{
           width: 36, height: 36, borderRadius: 10,
-          background: 'linear-gradient(135deg, #166534, #4ade80)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-        }}>💰</div>
+          background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+        }}>
+          <Bot size={20} />
+        </div>
         <div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--text-1)' }}>Tivo</div>
-          <div style={{ fontSize: 11, color: 'var(--green-400)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green-400)' }} />
+          <div style={{ fontSize: 11, color: '#4f46e5', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4f46e5' }} />
             online
           </div>
         </div>
@@ -151,21 +153,22 @@ export default function ChatPage() {
             flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
             gap: 8, marginBottom: 14, alignItems: 'flex-end',
           }}>
-            {msg.role === 'assistant' && (
-              <div style={{
-                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                background: 'linear-gradient(135deg, #166534, #4ade80)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-              }}>💰</div>
-            )}
+            <div style={{
+              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+              background: msg.role === 'user' ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: msg.role === 'user' ? 'var(--text-3)' : 'white'
+            }}>
+              {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
+            </div>
             <div style={{ maxWidth: '78%' }}>
               <div style={{
-                background: msg.role === 'user' ? 'var(--green-600)' : 'var(--bg-card)',
+                background: msg.role === 'user' ? '#4f46e5' : 'var(--bg-card)',
                 border: msg.role === 'user' ? 'none' : '1px solid var(--border)',
                 borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                 padding: '10px 14px',
                 fontSize: 14, lineHeight: 1.65, color: 'var(--text-1)',
                 fontWeight: 300, whiteSpace: 'pre-wrap',
+                boxShadow: msg.role === 'user' ? '0 4px 12px rgba(79,70,229,0.2)' : 'none'
               }}>
                 {msg.content}
               </div>
@@ -181,9 +184,11 @@ export default function ChatPage() {
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 14 }}>
             <div style={{
               width: 28, height: 28, borderRadius: 8,
-              background: 'linear-gradient(135deg, #166534, #4ade80)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-            }}>💰</div>
+              background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+            }}>
+              <Bot size={14} />
+            </div>
             <div style={{
               background: 'var(--bg-card)', border: '1px solid var(--border)',
               borderRadius: '16px 16px 16px 4px', padding: '12px 16px',
@@ -191,7 +196,7 @@ export default function ChatPage() {
             }}>
               {[0, 1, 2].map(i => (
                 <div key={i} style={{
-                  width: 6, height: 6, borderRadius: '50%', background: 'var(--green-400)',
+                  width: 6, height: 6, borderRadius: '50%', background: '#4f46e5',
                   animation: `pulse-dot 1.2s ${i * 0.2}s infinite`,
                 }} />
               ))}
@@ -204,8 +209,8 @@ export default function ChatPage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             {suggestions.map((s, i) => (
               <button key={i} onClick={() => send(s)} style={{
-                background: 'var(--green-dim)', border: '1px solid var(--border-em)',
-                borderRadius: 20, color: 'var(--green-400)', fontSize: 12,
+                background: 'rgba(79,70,229,0.1)', border: '1px solid rgba(79,70,229,0.2)',
+                borderRadius: 20, color: '#c7d2fe', fontSize: 12,
                 padding: '6px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)',
                 transition: 'all 0.2s',
               }}>{s}</button>
