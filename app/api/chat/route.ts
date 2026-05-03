@@ -378,6 +378,7 @@ Metas: ${JSON.stringify(m || [])}`
       if (currentMessages[0].role !== 'user') currentMessages.shift()
       
       while (true) {
+        console.log('📡 Chamando Gemini API...')
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -387,18 +388,35 @@ Metas: ${JSON.stringify(m || [])}`
             tools: geminiTools,
           }),
         })
+        
         const data = await res.json()
+        
+        if (data.error) {
+          console.error('❌ Erro na API do Gemini:', data.error)
+          finalResponse = `Erro na IA: ${data.error.message}`
+          break
+        }
+
         const candidate = data.candidates?.[0]
-        const parts = candidate?.content?.parts || []
+        if (!candidate) {
+          console.error('❌ Nenhuma resposta da IA (Safety filter?):', JSON.stringify(data, null, 2))
+          finalResponse = 'A IA não conseguiu gerar uma resposta segura.'
+          break
+        }
+
+        const parts = candidate.content?.parts || []
         const calls = parts.filter((p: any) => p.functionCall)
 
         if (calls.length > 0) {
-          console.log('🤖 IA Chamando ferramentas:', calls.map((c: any) => c.functionCall.name))
+          console.log('🤖 IA solicitou ferramentas:', calls.map((c: any) => c.functionCall.name))
           currentMessages.push(candidate.content)
+          
           for (const call of calls) {
             const { name, args } = call.functionCall
             const result = await executarFerramenta(name, args, userId, supabase)
             console.log(`✅ Resultado de ${name}:`, result)
+            
+            // Em Gemini REST, o resultado da função deve ser enviado em um bloco com role 'function'
             currentMessages.push({
               role: 'function',
               parts: [{ functionResponse: { name, response: result } }]
@@ -406,6 +424,7 @@ Metas: ${JSON.stringify(m || [])}`
           }
         } else {
           finalResponse = parts.find((p: any) => p.text)?.text || 'Não consegui processar.'
+          console.log('✅ Resposta final da IA gerada.')
           break
         }
       }
