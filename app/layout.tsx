@@ -4,13 +4,12 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Tivo — Seu assistente financeiro',
   description: 'Gerencie suas finanças com inteligência artificial',
-  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0d1117',
+  themeColor: '#4f46e5',
 }
 
 import { ThemeProvider } from './components/ThemeProvider'
