@@ -378,8 +378,8 @@ Metas: ${JSON.stringify(m || [])}`
       if (currentMessages[0].role !== 'user') currentMessages.shift()
       
       while (true) {
-        console.log('📡 Chamando Gemini API...')
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        console.log('📡 Chamando Gemini API (v1)...')
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
