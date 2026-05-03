@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#4f46e5',
     icons: [
       {
-        src: '/icon.png?v=1',
+        src: '/tivo-logo.png',
         sizes: 'any',
         type: 'image/png',
       },
