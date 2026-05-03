@@ -83,7 +83,7 @@ const tools = [
   },
   {
     name: 'excluir_conta',
-    description: 'Exclui uma conta',
+    description: 'Move uma conta para a lixeira (exclusão lógica)',
     parameters: {
       type: 'object',
       properties: { id: { type: 'string' } },
@@ -107,7 +107,16 @@ const tools = [
   },
   {
     name: 'excluir_receita',
-    description: 'Exclui uma receita',
+    description: 'Move uma receita para a lixeira (exclusão lógica)',
+    parameters: {
+      type: 'object',
+      properties: { id: { type: 'string' } },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'excluir_meta',
+    description: 'Move uma meta para a lixeira (exclusão lógica)',
     parameters: {
       type: 'object',
       properties: { id: { type: 'string' } },
@@ -174,7 +183,7 @@ const tools = [
   },
 ]
 
-// Adaptação para Gemini
+// Ferramentas que a IA pode usar (Formato Genérico)
 const geminiTools = [{ function_declarations: tools }]
 
 // Adaptação para Anthropic (Claude)
@@ -213,7 +222,7 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         const ano = input.ano || new Date().getFullYear()
         const ini = `${ano}-${String(mes).padStart(2, '0')}-01`
         const fim = new Date(ano, mes, 0).toISOString().split('T')[0]
-        let q = supabase.from('contas').select('*').eq('usuario_id', userId)
+        let q = supabase.from('contas').select('*').eq('usuario_id', userId).is('excluido_em', null)
         if (input.status) q = q.eq('status', input.status)
         else q = q.gte('vencimento', ini).lte('vencimento', fim)
         const { data, error } = await q.order('vencimento')
@@ -222,7 +231,7 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
       }
       case 'atualizar_conta': {
         const { id, grupo_id, ...upd } = input
-        let q = supabase.from('contas').update(upd).eq('usuario_id', userId)
+        let q = supabase.from('contas').update(upd).eq('usuario_id', userId).is('excluido_em', null)
         if (id) q = q.eq('id', id)
         else if (grupo_id) q = q.eq('grupo_id', grupo_id).gte('vencimento', new Date().toISOString().split('T')[0])
         else return { erro: 'ID ou Grupo ID necessário.' }
@@ -232,19 +241,18 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         return { sucesso: true, mensagem: `${data?.length || 0} conta(s) atualizada(s).` }
       }
       case 'excluir_conta': {
-        const { error } = await supabase.from('contas').delete().eq('id', input.id).eq('usuario_id', userId)
+        const { error } = await supabase.from('contas').update({ excluido_em: new Date().toISOString() }).eq('id', input.id).eq('usuario_id', userId)
         if (error) throw error
-        return { sucesso: true, mensagem: 'Conta excluída.' }
+        return { sucesso: true, mensagem: 'Conta movida para a lixeira.' }
       }
       case 'atualizar_receita': {
         const { id, grupo_id, novo_dia, ...upd } = input
         if (id) {
-          const { error } = await supabase.from('receitas').update(upd).eq('id', id).eq('usuario_id', userId)
+          const { error } = await supabase.from('receitas').update(upd).eq('id', id).eq('usuario_id', userId).is('excluido_em', null)
           if (error) throw error
           return { sucesso: true, mensagem: 'Receita atualizada.' }
         } else if (grupo_id && novo_dia) {
-          // Lógica especial para mudar o dia de toda a recorrência
-          const { data: records } = await supabase.from('receitas').select('*').eq('grupo_id', grupo_id).gte('data_recebimento', new Date().toISOString().split('T')[0])
+          const { data: records } = await supabase.from('receitas').select('*').eq('grupo_id', grupo_id).is('excluido_em', null).gte('data_recebimento', new Date().toISOString().split('T')[0])
           for (const rec of (records || [])) {
             const d = new Date(rec.data_recebimento + 'T12:00:00Z')
             d.setDate(novo_dia)
@@ -255,9 +263,14 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         return { erro: 'ID ou (Grupo ID + Novo Dia) necessário.' }
       }
       case 'excluir_receita': {
-        const { error } = await supabase.from('receitas').delete().eq('id', input.id).eq('usuario_id', userId)
+        const { error } = await supabase.from('receitas').update({ excluido_em: new Date().toISOString() }).eq('id', input.id).eq('usuario_id', userId)
         if (error) throw error
-        return { sucesso: true, mensagem: 'Receita excluída.' }
+        return { sucesso: true, mensagem: 'Receita movida para a lixeira.' }
+      }
+      case 'excluir_meta': {
+        const { error } = await supabase.from('metas').update({ excluido_em: new Date().toISOString() }).eq('id', input.id).eq('usuario_id', userId)
+        if (error) throw error
+        return { sucesso: true, mensagem: 'Meta movida para a lixeira.' }
       }
       case 'criar_receita': {
         const { descricao, valor, data_recebimento, categoria, tipo = 'unica', parcelas = 1 } = input
@@ -284,7 +297,7 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         const ano = input.ano || new Date().getFullYear()
         const ini = `${ano}-${String(mes).padStart(2, '0')}-01`
         const fim = new Date(ano, mes, 0).toISOString().split('T')[0]
-        const { data, error } = await supabase.from('receitas').select('*').eq('usuario_id', userId).gte('data_recebimento', ini).lte('data_recebimento', fim).order('data_recebimento')
+        const { data, error } = await supabase.from('receitas').select('*').eq('usuario_id', userId).is('excluido_em', null).gte('data_recebimento', ini).lte('data_recebimento', fim).order('data_recebimento')
         if (error) throw error
         return { receitas: data }
       }
@@ -294,13 +307,13 @@ async function executarFerramenta(nome: string, input: any, userId: string, supa
         return { sucesso: true }
       }
       case 'listar_metas': {
-        const { data, error } = await supabase.from('metas').select('*').eq('usuario_id', userId).eq('status', input.status || 'ativa')
+        const { data, error } = await supabase.from('metas').select('*').eq('usuario_id', userId).is('excluido_em', null).eq('status', input.status || 'ativa')
         if (error) throw error
         return { metas: data }
       }
       case 'atualizar_meta': {
         const { id, ...upd } = input
-        const { error } = await supabase.from('metas').update(upd).eq('id', id).eq('usuario_id', userId)
+        const { error } = await supabase.from('metas').update(upd).eq('id', id).eq('usuario_id', userId).is('excluido_em', null)
         if (error) throw error
         return { sucesso: true }
       }
