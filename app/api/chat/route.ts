@@ -393,14 +393,14 @@ Metas: ${JSON.stringify(m || [])}`
         
         if (data.error) {
           console.error('❌ Erro detalhado da API:', JSON.stringify(data.error, null, 2))
-          finalResponse = `Erro na IA (${data.error.code}): ${data.error.message}`
+          finalResponse = 'Desculpe, tive um probleminha técnico ao processar sua solicitação. Pode tentar novamente?'
           break
         }
 
         const candidate = data.candidates?.[0]
         if (!candidate) {
           console.error('❌ Nenhuma resposta da IA (Safety filter?):', JSON.stringify(data, null, 2))
-          finalResponse = 'A IA não conseguiu gerar uma resposta segura.'
+          finalResponse = 'Não consegui gerar uma resposta para isso por motivos de segurança ou política. Pode tentar perguntar de outra forma?'
           break
         }
 
