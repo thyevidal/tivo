@@ -41,21 +41,23 @@ export default function PainelPage() {
       
       const mais30Dias = new Date(hojeDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-      // 1. Busca Receitas do mês atual
+      // 1. Busca Receitas do mês atual (não excluídas)
       const { data: receitas } = await supabase
         .from('receitas')
         .select('*')
         .eq('usuario_id', session.user.id)
+        .is('excluido_em', null)
         .gte('data_recebimento', inicioMes)
         .lte('data_recebimento', fimMes)
       
       const receitasMes = (receitas || []).reduce((acc, curr) => acc + Number(curr.valor), 0)
 
-      // 2. Busca Contas
+      // 2. Busca Contas (não excluídas)
       const { data: todasContas } = await supabase
         .from('contas')
         .select('*')
         .eq('usuario_id', session.user.id)
+        .is('excluido_em', null)
 
       if (!todasContas) { setLoading(false); return }
 

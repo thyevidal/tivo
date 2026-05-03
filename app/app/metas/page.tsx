@@ -23,7 +23,12 @@ export default function MetasPage() {
   async function load() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    const { data } = await supabase.from('metas').select('*').eq('usuario_id', session.user.id).order('criado_em', { ascending: false })
+    const { data } = await supabase
+      .from('metas')
+      .select('*')
+      .eq('usuario_id', session.user.id)
+      .is('excluido_em', null) // Filtrar lixeira
+      .order('criado_em', { ascending: false })
     setMetas(data || [])
   }
 
@@ -80,9 +85,10 @@ export default function MetasPage() {
   }
 
   const deletar = async (id: string) => {
-    await supabase.from('metas').delete().eq('id', id)
+    const now = new Date().toISOString()
+    await supabase.from('metas').update({ excluido_em: now }).eq('id', id)
     setConfirmDeleteId(null)
-    showToast('Meta removida.')
+    showToast('Meta enviada para a lixeira.')
     load()
   }
 

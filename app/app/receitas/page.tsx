@@ -32,6 +32,7 @@ export default function ReceitasPage() {
       .from('receitas')
       .select('*')
       .eq('usuario_id', session.user.id)
+      .is('excluido_em', null) // Filtrar lixeira
       .order('data_recebimento', { ascending: true })
     setReceitas(data || [])
     setLoading(false)
@@ -168,12 +169,14 @@ export default function ReceitasPage() {
     const c = receitas.find(c => c.id === id)
     if (!c) return
     
+    const now = new Date().toISOString()
+
     if (deleteFuture && c.grupo_id) {
-      await supabase.from('receitas').delete().eq('grupo_id', c.grupo_id).eq('status', 'pendente').gte('data_recebimento', c.data_recebimento)
-      showToast('Parcelas removidas.')
+      await supabase.from('receitas').update({ excluido_em: now }).eq('grupo_id', c.grupo_id).eq('status', 'pendente').gte('data_recebimento', c.data_recebimento)
+      showToast('Parcelas enviadas para a lixeira.')
     } else {
-      await supabase.from('receitas').delete().eq('id', id)
-      showToast('Receita removida.')
+      await supabase.from('receitas').update({ excluido_em: now }).eq('id', id)
+      showToast('Receita enviada para a lixeira.')
     }
     setConfirmDeleteId(null)
     load()

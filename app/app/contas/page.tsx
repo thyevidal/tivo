@@ -32,6 +32,7 @@ export default function ContasPage() {
       .from('contas')
       .select('*')
       .eq('usuario_id', session.user.id)
+      .is('excluido_em', null) // Filtrar lixeira
       .order('vencimento', { ascending: true })
     setContas(data || [])
     setLoading(false)
@@ -170,12 +171,14 @@ export default function ContasPage() {
     const c = contas.find(c => c.id === id)
     if (!c) return
     
+    const now = new Date().toISOString()
+
     if (deleteFuture && c.grupo_id) {
-      await supabase.from('contas').delete().eq('grupo_id', c.grupo_id).eq('status', 'pendente').gte('vencimento', c.vencimento)
-      showToast('Parcelas removidas.')
+      await supabase.from('contas').update({ excluido_em: now }).eq('grupo_id', c.grupo_id).eq('status', 'pendente').gte('vencimento', c.vencimento)
+      showToast('Parcelas enviadas para a lixeira.')
     } else {
-      await supabase.from('contas').delete().eq('id', id)
-      showToast('Conta removida.')
+      await supabase.from('contas').update({ excluido_em: now }).eq('id', id)
+      showToast('Conta enviada para a lixeira.')
     }
     setConfirmDeleteId(null)
     load()
